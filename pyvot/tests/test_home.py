@@ -1,5 +1,5 @@
 from starlette.testclient import TestClient
-from app import app
+from pyvot.app import app
 
 client = TestClient(app)
 
