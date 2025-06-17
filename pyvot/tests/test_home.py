@@ -50,10 +50,12 @@ def test_upload_nofile():
 
 def test_upload_emptyfile():
     response = client.post("/", files={"file": ("test.csv", "")})
-    assert response.status_code == 400
+    assert response.status_code == 200
+    assert 'File is empty.' in response.text
 
 def test_upload_existing():
     response = client.post("/", files={"file": ("test.csv", "col1,col2\n1,2\n3,4")})
     assert response.status_code == 200
     response = client.post("/", files={"file": ("test.csv", "col1,col2\n1,2\n3,4")})
-    assert response.status_code == 400
+    assert response.status_code == 200
+    assert 'File already exists.' in response.text
