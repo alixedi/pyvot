@@ -15,7 +15,7 @@ def upload_form():
     )
 
 @app.get('/{filename}')
-async def home(filename: str=''):
+async def home(filename: str='', val: list[str]=[], row: list[str]=[], col: list[str]=[], agg: str='count'):
     if not filename:
         return Titled("File Upload Demo",
             Article(upload_form()),
@@ -27,6 +27,10 @@ async def home(filename: str=''):
             raise HTTPException(status_code=404, detail=f"File {filename} not found.")
         try:
             df = pd.read_csv(file_path)
+            # Strip whitespace from column names
+            df.columns=df.columns.str.strip()
+            if (row or col):
+                df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
         except pd.errors.EmptyDataError:
             raise HTTPException(status_code=400, detail=f"File {filename} is empty.")
         except pd.errors.ParserError:
