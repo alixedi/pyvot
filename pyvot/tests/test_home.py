@@ -15,7 +15,7 @@ def test_home():
     response = client.get("/")
     assert response.status_code == 200
 
-def test_get_csv():
+def test_upload():
     client.post("/", files={"file": ("test.csv", "col1,col2\n1,2\n3,4")})
     response = client.get("/test")
     assert response.status_code == 200
@@ -25,6 +25,14 @@ def test_get_csv():
     assert "2" in response.text
     assert "3" in response.text
     assert "4" in response.text
+
+def test_pivot():
+    client.post("/", files={"file": ("test.csv", "col1,col2\n1,2\n3,4")})
+    response = client.get("/test?row=col1&col=col2&val=col1&agg=count")
+    assert response.status_code == 200
+    assert "col1" in response.text
+    assert "col2" in response.text
+    assert "count" in response.text
 
 def test_get_csv_non_existent():
     response = client.get("/nonexistent.csv")
