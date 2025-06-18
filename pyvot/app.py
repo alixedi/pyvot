@@ -22,7 +22,54 @@ def upload_form(errors: list[str] = []):
         ),
     )
 
-def clean_data(df: pd.DataFrame):
+def pivot_form(columns: list[str], row: list[str], col: list[str], val: list[str], agg: str):
+    return Form(
+        Label(
+            'Rows',
+            Select(
+                "Rows",
+                *[Option(c, value=c, selected=(c in row)) for c in columns],
+                name='row',
+                multiple=True,
+                cls='select',
+            ),
+        ),
+        Label(
+            'Columns',
+            Select(
+                "Columns",
+                *[Option(c, value=c, selected=(c in col)) for c in columns],
+                name='col',
+                multiple=True,
+                cls='select',
+            ),
+        ),
+        Label(
+            'Values',
+            Select(
+                "Values",
+                *[Option(c, value=c, selected=(c in val)) for c in columns],
+                name='val',
+                multiple=True,
+                cls='select',
+            ),
+        ),
+        Label(
+            'Aggregation',
+            Select(
+                "Aggregation",
+                *[Option(f, value=f, selected=(f == agg)) for f in ('count', 'sum', 'mean', 'min', 'max')],
+                name='agg',
+                multiple=True,
+                cls='select',
+            ),
+        ),
+        Button("Generate Pivot", type="submit", cls='secondary'),
+        method='get',
+        action='.',
+    )
+
+def clean(df: pd.DataFrame):
     # Strip whitespace from column names
     df.columns = df.columns.str.strip()
     return df
