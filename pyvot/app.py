@@ -8,19 +8,22 @@ app, rt = fast_app(debug=True, title="Pyvot")
 UPLOAD_DIR = Path("datasets")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-def upload_form(errors: list[str] = []):
-    return Titled(
-        "File Upload Demo",
-        Article(
-            Form(method='post', action=upload)(
-                Input(type="file", name="file"),
-                Button("Upload", type="submit", cls='secondary'),
-                Div(cls='errors')(
-                    *[Div(error, cls='error') for error in errors]
+def upload_page(errors: list[str] = []):
+    return Titled("Pyvot",
+            Article(
+                Form(method='post', action=upload)(
+                    Input(type="file", name="file"),
+                    Button("Upload", type="submit", cls='secondary'),
+                    Div(cls='errors')(
+                        *[Div(error, cls='error') for error in errors]
+                    ),
                 ),
-            ),
-        ),
-    )
+                Div(cls='info')(
+                    "Upload a CSV file to generate a pivot table.",
+                    "After uploading, you can select rows, columns, and aggregation functions."
+                )
+            )
+        )
 
 def pivot_form(columns: list[str], row: list[str], col: list[str], val: list[str], agg: str):
     return Form(
@@ -115,15 +118,15 @@ async def home(filename: str='', val: list[str]=[], row: list[str]=[], col: list
 async def upload(file: UploadFile):
     filebuffer = await file.read()
     if not file.filename.endswith('.csv'):
-        return upload_form(errors=["Only .csv files allowed."])
+        return upload_page(errors=["Only .csv files allowed."])
     if (UPLOAD_DIR / file.filename).exists():
-        return upload_form(errors=[f"File already exists."])
+        return upload_page(errors=[f"File already exists."])
     try:
         csv_str = StringIO(filebuffer.decode('utf-8'))
         df = process_csv(csv_str)
     except HTTPException as e:
-        return upload_form(errors=[e.detail])
-    (UPLOAD_DIR / file.filename).write_bytes(filebuffer)
-    return Redirect(f"/{file.filename.replace('.csv', '')}")
+        return upload_page(errors=[e.detail])
+    df.to_csv(UPLOAD_DIR / file.filename, index=False)
+    return Redirect(f"/{file.filename.replace('.csv', '')}/")
 
 serve()
