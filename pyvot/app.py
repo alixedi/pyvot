@@ -74,13 +74,11 @@ def clean(df: pd.DataFrame):
     df.columns = df.columns.str.strip()
     return df
 
-def check_csv(csv: str):
+def process_csv(csv: str):
     try:
         df = pd.read_csv(csv)
-        # Strip whitespace from column names todo: do this on upload
-        df.columns=df.columns.str.strip()
-        # clean df
-        df = clean_data(df)
+        df = clean(df)
+        return df
     except pd.errors.EmptyDataError:
         raise HTTPException(
             status_code=400,
@@ -122,7 +120,7 @@ async def upload(file: UploadFile):
         return upload_form(errors=[f"File already exists."])
     try:
         csv_str = StringIO(filebuffer.decode('utf-8'))
-        check_csv(csv_str)
+        df = process_csv(csv_str)
     except HTTPException as e:
         return upload_form(errors=[e.detail])
     (UPLOAD_DIR / file.filename).write_bytes(filebuffer)
