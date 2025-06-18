@@ -98,19 +98,21 @@ def process_csv(csv: str):
             detail=f"Error while processing file.: {str(e)}"
         )
 
-@app.get('/{filename}')
+@app.get('/{filename}/')
 async def home(filename: str='', val: list[str]=[], row: list[str]=[], col: list[str]=[], agg: str='count'):
     if not filename:
-        return upload_form()
+        return upload_page()
     file_path = UPLOAD_DIR / f'{filename}.csv'
     if not file_path.exists():
         raise HTTPException(status_code=404, detail=f"File {filename} not found.")
     df = pd.read_csv(file_path)
+    columns = df.columns.tolist()
     if (row or col):
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
     return Titled(f"{filename}",
         Article(
-            NotStr(df.to_html(), ),
+            Div(NotStr(df.to_html(), ), id='data'),
+            Div(pivot_form(columns, row, col, val, agg), id='pivot')
         )
     )
 
