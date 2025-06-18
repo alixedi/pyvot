@@ -98,7 +98,7 @@ def process_csv(csv: str):
             detail=f"Error while processing file.: {str(e)}"
         )
 
-@app.get('/{filename}/')
+@app.get('/{filename}')
 async def home(filename: str='', val: list[str]=[], row: list[str]=[], col: list[str]=[], agg: str='count'):
     if not filename:
         return upload_page()
@@ -129,6 +129,6 @@ async def upload(file: UploadFile):
     except HTTPException as e:
         return upload_page(errors=[e.detail])
     df.to_csv(UPLOAD_DIR / file.filename, index=False)
-    return Redirect(f"/{file.filename.replace('.csv', '')}/")
+    return Redirect(f"/{file.filename.replace('.csv', '')}")
 
 serve()
