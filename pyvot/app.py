@@ -35,7 +35,7 @@ def upload_page(errors: list[str] = []):
                     "Upload a CSV file to generate a pivot table.",
                     "After uploading, you can select rows, columns, and aggregation functions."
                 )
-            )
+            ),
         )
 
 def pivot_form(columns: list[str], row: list[str], col: list[str], val: list[str], agg: str):
@@ -124,9 +124,10 @@ async def home(filename: str='', val: list[str]=[], row: list[str]=[], col: list
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
     return Titled(f"{filename}",
         Article(
+            *[Button(col) for col in columns],
             Div(NotStr(df.to_html(), ), id='data'),
             Div(pivot_form(columns, row, col, val, agg), id='pivot')
-        )
+        ),
     )
 
 @app.post('/')
