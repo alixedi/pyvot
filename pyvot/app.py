@@ -3,7 +3,20 @@ from fasthtml.common import *
 from pathlib import Path
 import pandas as pd
 
-app, rt = fast_app(debug=True, title="Pyvot")
+app, rt = fast_app(
+    debug=True,
+    title="Pyvot",
+    hdrs=[
+        Script(
+            src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
+            defer=True,
+        ),
+        Script(
+            src='https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js',
+            defer=True,
+        ),
+    ],
+)
 
 UPLOAD_DIR = Path("datasets")
 UPLOAD_DIR.mkdir(exist_ok=True)
