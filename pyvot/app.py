@@ -8,11 +8,11 @@ app, rt = fast_app(
     title="Pyvot",
     hdrs=[
         Script(
-            src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
+            src='https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js',
             defer=True,
         ),
         Script(
-            src='https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js',
+            src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
             defer=True,
         ),
     ],
