@@ -124,9 +124,52 @@ async def home(filename: str='', val: list[str]=[], row: list[str]=[], col: list
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
     return Titled(f"{filename}",
         Article(
-            *[Button(col) for col in columns],
+            Ul(
+                *[
+                    Li(
+                        Button(col),
+                        style="list-style-type: none;",
+                        **{'x-sort:item': f'"{col}"', }
+                    )
+                    for col in columns
+                ],
+                style="padding: 16px; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;",
+                **{'x-sort': True, 'x-sort:group': 'pyvot'}
+            ),
+            Label(
+                'Rows',
+                Ul(
+                    style="border: 1px solid #ccc; min-height: 100px; padding: 16px; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;",
+                    **{'x-sort': 'data.set($item, "row"); submit();', 'x-sort:group': 'pyvot'}
+                ),
+            ),
+            Label(
+                'Columns',
+                Ul(
+                    style="border: 1px solid #ccc; min-height: 100px; padding: 16px; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;",
+                    **{'x-sort': 'data.set($item, "col"); submit();', 'x-sort:group': 'pyvot'}
+                ),
+            ),
+            Label(
+                'Values',
+                Ul(
+                    style="border: 1px solid #ccc; min-height: 100px; padding: 16px; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;",
+                    **{'x-sort': 'data.set($item, "val"); submit();', 'x-sort:group': 'pyvot'}
+                ),
+            ),
             Div(NotStr(df.to_html(), ), id='data'),
-            Div(pivot_form(columns, row, col, val, agg), id='pivot')
+            **{'x-data': '''{
+                data: new Map(),
+                submit() {
+                    var q = {};
+                    this.data.forEach((v, k) => {
+                        if (!q[v]) { q[v] = []; }
+                        q[v].push(k);
+                    });
+                    var url = window.location.href.split('?')[0];
+                    htmx.ajax('GET', url + '/?' + new URLSearchParams(q));
+                },
+            }'''},
         ),
     )
 
