@@ -52,6 +52,12 @@ def checkbox_select(options: list[str], name: str = ""):
                 hidden=True,
             ),
             **{"x-sort:item": f'{opt.replace(" ", "")}'},
+            style='''
+                background-color: var(--pico-primary-background);
+                padding: 5px 10px; margin: 5px;
+                border: 1px solid var(--pico-primary-border);
+                border-radius: 4px; display: inline-block;
+            ''',
         )
         for opt in options
     ]
