@@ -75,15 +75,17 @@ def agg_select(agg: str):
 
 def drop_div(name: str, data=list[str]):
     return Label(
-        f"{name}s",
+        f"{name.title()}s",
         Div(
             *checkbox_select(data, name=name),
             style='''
                 border: 1px solid var(--pico-h1-color);
-                padding: 2rem; margin-bottom: 1em; border-radius: 4px;
+                border-radius: 4px; padding: 0.5rem;
+                min-height: 4em;
             ''',
             **{"x-sort": f'(item) => sort(item, "{name}")', "x-sort:group": "pivot"},
         ),
+        style="width: 100%;"
     )
 
 def pivot_form(
@@ -94,7 +96,6 @@ def pivot_form(
         Div(
             *checkbox_select(unused_columns),
             ** {"x-sort": f'(item) => sort(item, "")', "x-sort:group": "pivot"},
-            style="margin-bottom: 1em;"
         ),
         Form(
             drop_div("row", row),
@@ -103,11 +104,11 @@ def pivot_form(
             Label(
                 "Aggregation",
                 agg_select(agg),
-                style="margin-bottom: 1em;",
             ),
             Button("Generate Pivot", type="submit", cls="secondary"),
             method="get",
             action=".",
+            style="display: flex; flex-direction: column; gap: 1em; margin: 1em 0em;"
         ),
         **{
             "x-data": """{sort(item, select) { item.name = select }}"""
