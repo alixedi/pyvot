@@ -81,9 +81,8 @@ def drop_div(name: str, data=list[str]):
         Div(
             *checkbox_select(data, name=name),
             style='''
-                border: 1px solid var(--pico-h1-color);
-                border-radius: 4px; padding: 0.5rem;
-                min-height: 4em;
+                border: 1px solid var(--pico-h1-color); border-radius: 4px;
+                padding: 0.5rem; min-height: 4em;
             ''',
             **{"x-sort": f'(item) => sort(item, "{name}")', "x-sort:group": "pivot"},
         ),
@@ -104,18 +103,13 @@ def pivot_form(
             drop_div("row", row),
             drop_div("col", col),
             drop_div("val", val),
-            Label(
-                "Aggregation",
-                agg_select(agg),
-            ),
+            Label("Aggregation", agg_select(agg)),
             Button("Generate Pivot", type="submit", cls="secondary"),
             method="get",
             action=".",
             style="display: flex; flex-direction: column; gap: 1em; margin: 1em 0em;"
         ),
-        **{
-            "x-data": """{sort(item, select) { item.name = select }}"""
-        },
+        **{"x-data": """{sort(item, select) { item.name = select }}"""},
     )
 
 
@@ -164,9 +158,7 @@ async def pivot(
         Article(
             Div(pivot_form(columns, row=row, col=col, val=val, agg=agg), id="pivot"),
             Div(
-                NotStr(
-                    df.to_html(),
-                ),
+                NotStr(df.to_html()),
                 id="data",
                 style="overflow-x:auto;",
             ),
