@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from starlette.testclient import TestClient
-from pyvot.app import app, UPLOAD_DIR, SECRET_URL
+from pyvot.main import app, UPLOAD_DIR, SECRET_URL
 
 client = TestClient(app)
 
