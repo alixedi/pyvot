@@ -3,6 +3,8 @@ from fasthtml.common import *
 from pathlib import Path
 import pandas as pd
 
+SECRET_URL = 'e7kqnVDdGOQNMa6C'
+
 app, rt = fast_app(
     debug=True,
     title="Pyvot",
@@ -166,7 +168,7 @@ async def pivot(
     )
 
 
-@app.get("/")
+@app.get(f"/{SECRET_URL}")
 async def home(
     filename: str = "",
     val: list[str] = [],
@@ -177,7 +179,7 @@ async def home(
     return upload_page()
 
 
-@app.post("/")
+@app.post(f"/{SECRET_URL}")
 async def upload(file: UploadFile):
     filebuffer = await file.read()
     if not file.filename.endswith(".csv"):
