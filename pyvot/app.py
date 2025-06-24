@@ -62,6 +62,7 @@ def checkbox_select(options: list[str], name: str = ""):
         for opt in options
     ]
 
+
 def agg_select(agg: str):
     return Select(
         "Aggregation",
@@ -72,6 +73,7 @@ def agg_select(agg: str):
         name="agg",
         cls="select",
     )
+
 
 def drop_div(name: str, data=list[str]):
     return Label(
@@ -87,6 +89,7 @@ def drop_div(name: str, data=list[str]):
         ),
         style="width: 100%;"
     )
+
 
 def pivot_form(
     columns: list[str], row: list[str], col: list[str], val: list[str], agg: str
