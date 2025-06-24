@@ -71,7 +71,20 @@ def agg_select(agg: str):
         ],
         name="agg",
         cls="select",
-    ),
+    )
+
+def drop_div(name: str, data=list[str]):
+    return Label(
+        f"{name}s",
+        Div(
+            *checkbox_select(data, name=name),
+            style='''
+                border: 1px solid var(--pico-h1-color);
+                padding: 2rem; margin-bottom: 1em; border-radius: 4px;
+            ''',
+            **{"x-sort": f'(item) => sort(item, "{name}")', "x-sort:group": "pivot"},
+        ),
+    )
 
 def pivot_form(
     columns: list[str], row: list[str], col: list[str], val: list[str], agg: str
@@ -81,38 +94,23 @@ def pivot_form(
         Div(
             *checkbox_select(unused_columns),
             ** {"x-sort": f'(item) => sort(item, "")', "x-sort:group": "pivot"},
+            style="margin-bottom: 1em;"
         ),
         Form(
-            Div(
-                "Rows",
-                *checkbox_select(row, name="row"),
-                style="border: 1px solid #ccc; padding: 2rem;",
-                **{"x-sort": '(item) => sort(item, "row")', "x-sort:group": "pivot"},
-            ),
-            Div(
-                "Columns",
-                *checkbox_select(col, name="col"),
-                style="border: 1px solid #ccc; padding: 2rem;",
-                **{"x-sort": '(item) => sort(item, "col")', "x-sort:group": "pivot"},
-            ),
-            Div(
-                "Values",
-                *checkbox_select(val, name="val"),
-                style="border: 1px solid #ccc; padding: 2rem;",
-                **{"x-sort": '(item) => sort(item, "val")', "x-sort:group": "pivot"},
-            ),
+            drop_div("row", row),
+            drop_div("col", col),
+            drop_div("val", val),
             Label(
                 "Aggregation",
                 agg_select(agg),
+                style="margin-bottom: 1em;",
             ),
             Button("Generate Pivot", type="submit", cls="secondary"),
             method="get",
             action=".",
         ),
         **{
-            "x-data": """{
-            sort(item, select) { item.name = select }
-        }"""
+            "x-data": """{sort(item, select) { item.name = select }}"""
         },
     )
 
