@@ -152,7 +152,7 @@ async def pivot(
     if row or col:
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
     return Titled(
-        f"{filename}",
+        f"{filename.title()}",
         Article(
             Div(pivot_form(columns, row=row, col=col, val=val, agg=agg), id="pivot"),
             Div(
