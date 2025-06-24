@@ -8,8 +8,8 @@
             "name": "Pyvot Debug",
             "type": "debugpy",
             "request": "launch",
-            "cwd": "${workspaceFolder}/pyvot",
-            "program": "app.py",
+            "cwd": "${workspaceFolder}",
+            "program": "pyvot",
             "console": "integratedTerminal",
         }
     ]
