@@ -193,3 +193,6 @@ async def upload(file: UploadFile):
         return upload_page(errors=[e.detail])
     df.to_csv(UPLOAD_DIR / file.filename, index=False)
     return Redirect(f"/{file.filename.replace('.csv', '')}/")
+
+
+serve()
