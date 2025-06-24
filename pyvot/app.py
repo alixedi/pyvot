@@ -3,6 +3,8 @@ from fasthtml.common import *
 from pathlib import Path
 import pandas as pd
 
+SECRET_URL = 'e7kqnVDdGOQNMa6C'
+
 app, rt = fast_app(
     debug=True,
     title="Pyvot",
@@ -52,9 +54,16 @@ def checkbox_select(options: list[str], name: str = ""):
                 hidden=True,
             ),
             **{"x-sort:item": f'{opt.replace(" ", "")}'},
+            style='''
+                background-color: var(--pico-primary-background);
+                padding: 5px 10px; margin: 5px;
+                border: 1px solid var(--pico-primary-border);
+                border-radius: 4px; display: inline-block;
+            ''',
         )
         for opt in options
     ]
+
 
 def agg_select(agg: str):
     return Select(
@@ -65,7 +74,23 @@ def agg_select(agg: str):
         ],
         name="agg",
         cls="select",
-    ),
+    )
+
+
+def drop_div(name: str, data=list[str]):
+    return Label(
+        f"{name.title()}s",
+        Div(
+            *checkbox_select(data, name=name),
+            style='''
+                border: 1px solid var(--pico-h1-color); border-radius: 4px;
+                padding: 0.5rem; min-height: 4em;
+            ''',
+            **{"x-sort": f'(item) => sort(item, "{name}")', "x-sort:group": "pivot"},
+        ),
+        style="width: 100%;"
+    )
+
 
 def pivot_form(
     columns: list[str], row: list[str], col: list[str], val: list[str], agg: str
@@ -77,37 +102,16 @@ def pivot_form(
             ** {"x-sort": f'(item) => sort(item, "")', "x-sort:group": "pivot"},
         ),
         Form(
-            Div(
-                "Rows",
-                *checkbox_select(row, name="row"),
-                style="border: 1px solid #ccc; padding: 2rem;",
-                **{"x-sort": '(item) => sort(item, "row")', "x-sort:group": "pivot"},
-            ),
-            Div(
-                "Columns",
-                *checkbox_select(col, name="col"),
-                style="border: 1px solid #ccc; padding: 2rem;",
-                **{"x-sort": '(item) => sort(item, "col")', "x-sort:group": "pivot"},
-            ),
-            Div(
-                "Values",
-                *checkbox_select(val, name="val"),
-                style="border: 1px solid #ccc; padding: 2rem;",
-                **{"x-sort": '(item) => sort(item, "val")', "x-sort:group": "pivot"},
-            ),
-            Label(
-                "Aggregation",
-                agg_select(agg),
-            ),
+            drop_div("row", row),
+            drop_div("col", col),
+            drop_div("val", val),
+            Label("Aggregation", agg_select(agg)),
             Button("Generate Pivot", type="submit", cls="secondary"),
             method="get",
             action=".",
+            style="display: flex; flex-direction: column; gap: 1em; margin: 1em 0em;"
         ),
-        **{
-            "x-data": """{
-            sort(item, select) { item.name = select }
-        }"""
-        },
+        **{"x-data": """{sort(item, select) { item.name = select }}"""},
     )
 
 
@@ -152,20 +156,19 @@ async def pivot(
     if row or col:
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
     return Titled(
-        f"{filename}",
+        f"{filename.title()}",
         Article(
-            Div(
-                NotStr(
-                    df.to_html(),
-                ),
-                id="data",
-            ),
             Div(pivot_form(columns, row=row, col=col, val=val, agg=agg), id="pivot"),
+            Div(
+                NotStr(df.to_html()),
+                id="data",
+                style="overflow-x:auto;",
+            ),
         ),
     )
 
 
-@app.get("/")
+@app.get(f"/{SECRET_URL}")
 async def home(
     filename: str = "",
     val: list[str] = [],
@@ -176,7 +179,7 @@ async def home(
     return upload_page()
 
 
-@app.post("/")
+@app.post(f"/{SECRET_URL}")
 async def upload(file: UploadFile):
     filebuffer = await file.read()
     if not file.filename.endswith(".csv"):
