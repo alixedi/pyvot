@@ -159,6 +159,7 @@ async def pivot(
                     df.to_html(),
                 ),
                 id="data",
+                style="overflow-x:auto;",
             ),
             Div(pivot_form(columns, row=row, col=col, val=val, agg=agg), id="pivot"),
         ),
