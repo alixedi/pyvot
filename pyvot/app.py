@@ -1,3 +1,4 @@
+import dateutil
 from io import StringIO
 from fasthtml.common import *
 from pathlib import Path
@@ -115,11 +116,32 @@ def pivot_form(
     )
 
 
+def typer(df):
+    df2 = df.copy()
+    for col in df2.columns:
+        # Is it a number?
+        try:
+            df2[col] = pd.to_numeric(df[col])
+            continue
+        except Exception:
+            pass
+        # Is it a date?
+        try:
+            df2[col] = df[col].apply(dateutil.parser.parse)
+            df2[col] = pd.to_datetime(df2[col])
+            continue
+        except Exception as e:
+            pass
+    return df2
+
+
 def clean(df: pd.DataFrame):
     # Strip whitespace from column names
     df.columns = df.columns.str.strip()
     # strip whitespaces from all cells
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    # Remove non-space and non-alphanumerics
+    df.columns = df.columns.str.replace(r'[^A-Za-z0-9 ]+', '', regex=True)
     return df
 
 
@@ -151,7 +173,8 @@ async def pivot(
     file_path = UPLOAD_DIR / f"{filename}.csv"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail=f"File {filename} not found.")
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path, skipinitialspace=True, thousands=',')
+    df = typer(df)
     columns = df.columns.tolist()
     if row or col:
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
@@ -187,7 +210,7 @@ async def upload(file: UploadFile):
     if (UPLOAD_DIR / file.filename).exists():
         return upload_page(errors=[f"File already exists."])
     try:
-        csv_str = StringIO(filebuffer.decode("utf-8"))
+        csv_str = StringIO(filebuffer.decode("utf-8", errors='ignore'))
         df = process_csv(csv_str)
     except HTTPException as e:
         return upload_page(errors=[e.detail])
