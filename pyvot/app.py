@@ -140,6 +140,8 @@ def clean(df: pd.DataFrame):
     df.columns = df.columns.str.strip()
     # strip whitespaces from all cells
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+    # Remove non-space and non-alphanumerics
+    df.columns = df.columns.str.replace(r'[^A-Za-z0-9 ]+', '', regex=True)
     return df
 
 
