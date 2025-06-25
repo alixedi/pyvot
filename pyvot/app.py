@@ -187,7 +187,7 @@ async def upload(file: UploadFile):
     if (UPLOAD_DIR / file.filename).exists():
         return upload_page(errors=[f"File already exists."])
     try:
-        csv_str = StringIO(filebuffer.decode("utf-8"))
+        csv_str = StringIO(filebuffer.decode("utf-8", errors='ignore'))
         df = process_csv(csv_str)
     except HTTPException as e:
         return upload_page(errors=[e.detail])
