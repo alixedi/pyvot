@@ -1,3 +1,4 @@
+import dateutil
 from io import StringIO
 from fasthtml.common import *
 from pathlib import Path
@@ -113,6 +114,25 @@ def pivot_form(
         ),
         **{"x-data": """{sort(item, select) { item.name = select }}"""},
     )
+
+
+def typer(df):
+    df2 = df.copy()
+    for col in df2.columns:
+        # Is it a number?
+        try:
+            df2[col] = pd.to_numeric(df[col])
+            continue
+        except Exception:
+            pass
+        # Is it a date?
+        try:
+            df2[col] = df[col].apply(dateutil.parser.parse)
+            df2[col] = pd.to_datetime(df2[col])
+            continue
+        except Exception as e:
+            pass
+    return df2
 
 
 def clean(df: pd.DataFrame):
