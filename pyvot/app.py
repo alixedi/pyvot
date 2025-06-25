@@ -173,7 +173,8 @@ async def pivot(
     file_path = UPLOAD_DIR / f"{filename}.csv"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail=f"File {filename} not found.")
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path, skipinitialspace=True, thousands=',')
+    df = typer(df)
     columns = df.columns.tolist()
     if row or col:
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
