@@ -404,6 +404,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "pandas" },
+    { name = "python-dateutil" },
     { name = "python-fasthtml" },
 ]
 
@@ -415,6 +416,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pandas", specifier = ">=2.3.0" },
+    { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "python-fasthtml", specifier = ">=0.12.19" },
 ]
 
