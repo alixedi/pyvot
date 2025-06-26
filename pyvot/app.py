@@ -4,7 +4,11 @@ from fasthtml.common import *
 from pathlib import Path
 import pandas as pd
 
-SECRET_URL = 'e7kqnVDdGOQNMa6C'
+
+SECRET_URL = "e7kqnVDdGOQNMa6C"
+UPLOAD_DIR = Path("datasets")
+UPLOAD_DIR.mkdir(exist_ok=True)
+
 
 app, rt = fast_app(
     debug=True,
@@ -20,9 +24,6 @@ app, rt = fast_app(
         ),
     ],
 )
-
-UPLOAD_DIR = Path("datasets")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 
 def upload_page(errors: list[str] = []):
@@ -55,12 +56,12 @@ def checkbox_select(options: list[str], name: str = ""):
                 hidden=True,
             ),
             **{"x-sort:item": f'{opt.replace(" ", "")}'},
-            style='''
+            style="""
                 background-color: var(--pico-primary-background);
                 padding: 5px 10px; margin: 5px;
                 border: 1px solid var(--pico-primary-border);
                 border-radius: 4px; display: inline-block;
-            ''',
+            """,
         )
         for opt in options
     ]
@@ -83,13 +84,13 @@ def drop_div(name: str, data=list[str]):
         f"{name.title()}s",
         Div(
             *checkbox_select(data, name=name),
-            style='''
+            style="""
                 border: 1px solid var(--pico-h1-color); border-radius: 4px;
                 padding: 0.5rem; min-height: 4em;
-            ''',
+            """,
             **{"x-sort": f'(item) => sort(item, "{name}")', "x-sort:group": "pivot"},
         ),
-        style="width: 100%;"
+        style="width: 100%;",
     )
 
 
@@ -100,7 +101,7 @@ def pivot_form(
     return Div(
         Div(
             *checkbox_select(unused_columns),
-            ** {"x-sort": f'(item) => sort(item, "")', "x-sort:group": "pivot"},
+            **{"x-sort": f'(item) => sort(item, "")', "x-sort:group": "pivot"},
         ),
         Form(
             drop_div("row", row),
@@ -110,7 +111,7 @@ def pivot_form(
             Button("Generate Pivot", type="submit", cls="secondary"),
             method="get",
             action=".",
-            style="display: flex; flex-direction: column; gap: 1em; margin: 1em 0em;"
+            style="display: flex; flex-direction: column; gap: 1em; margin: 1em 0em;",
         ),
         **{"x-data": """{sort(item, select) { item.name = select }}"""},
     )
@@ -141,7 +142,7 @@ def clean(df: pd.DataFrame):
     # strip whitespaces from all cells
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
     # Remove non-space and non-alphanumerics
-    df.columns = df.columns.str.replace(r'[^A-Za-z0-9 ]+', '', regex=True)
+    df.columns = df.columns.str.replace(r"[^A-Za-z0-9 ]+", "", regex=True)
     return df
 
 
@@ -173,7 +174,7 @@ async def pivot(
     file_path = UPLOAD_DIR / f"{filename}.csv"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail=f"File {filename} not found.")
-    df = pd.read_csv(file_path, skipinitialspace=True, thousands=',')
+    df = pd.read_csv(file_path, skipinitialspace=True, thousands=",")
     df = typer(df)
     columns = df.columns.tolist()
     if row or col:
@@ -210,7 +211,7 @@ async def upload(file: UploadFile):
     if (UPLOAD_DIR / file.filename).exists():
         return upload_page(errors=[f"File already exists."])
     try:
-        csv_str = StringIO(filebuffer.decode("utf-8", errors='ignore'))
+        csv_str = StringIO(filebuffer.decode("utf-8", errors="ignore"))
         df = process_csv(csv_str)
     except HTTPException as e:
         return upload_page(errors=[e.detail])
