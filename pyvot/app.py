@@ -22,6 +22,11 @@ app, rt = fast_app(
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js",
             defer=True,
         ),
+        Link(
+            rel='stylesheet',
+            href='https://cdn.jsdelivr.net/npm/charts.css@1.1.0/dist/charts.min.css',
+            type='text/css'
+        ),
     ],
 )
 
@@ -79,6 +84,35 @@ def agg_select(agg: str):
     )
 
 
+def plt_select(plt: str = "table"):
+    return Select(
+        "Charts",
+        *[
+            Option(f, value=f, selected=(f == plt))
+            for f in ('table', 'bar', 'column', 'area', 'line', 'pie')
+        ],
+        name="plt",
+        cls="select",
+    )
+
+
+def df_to_html(df: pd.DataFrame, plt: str):
+    maxs = {col: df[col].max() for col in df.columns}
+    return Table(
+        # Thead(*[Th(col) for col in df.columns]),
+        Tbody(
+            *[Tr(
+                Th(idx),
+                *[Td(
+                    row[col],
+                    style=f'--size: {row[col]/maxs[col]}',
+                ) for col in df.columns]
+            ) for idx, row in df.iterrows()]
+        ),
+        cls='' if plt == 'table' else f'charts-css {plt} show-labels'
+    )
+
+
 def drop_div(name: str, data=list[str]):
     return Label(
         f"{name.title()}s",
@@ -95,7 +129,12 @@ def drop_div(name: str, data=list[str]):
 
 
 def pivot_form(
-    columns: list[str], row: list[str], col: list[str], val: list[str], agg: str
+    columns: list[str],
+    row: list[str],
+    col: list[str],
+    val: list[str],
+    agg: str,
+    plt: str,
 ):
     unused_columns = set(columns) - set(row) - set(col) - set(val)
     return Div(
@@ -108,6 +147,7 @@ def pivot_form(
             drop_div("col", col),
             drop_div("val", val),
             Label("Aggregation", agg_select(agg)),
+            Label("Chart", plt_select(plt)),
             Button("Generate Pivot", type="submit", cls="secondary"),
             method="get",
             action=".",
@@ -168,6 +208,7 @@ async def pivot(
     col: list[str] = [],
     val: list[str] = [],
     agg: str = "count",
+    plt: str = "table",
 ):
     if not filename:
         return upload_page()
@@ -182,9 +223,16 @@ async def pivot(
     return Titled(
         f"{filename.title()}",
         Article(
-            Div(pivot_form(columns, row=row, col=col, val=val, agg=agg), id="pivot"),
             Div(
-                NotStr(df.to_html()),
+                pivot_form(
+                    columns,
+                    row=row, col=col, val=val,
+                    agg=agg, plt=plt
+                ),
+                id="pivot"
+            ),
+            Div(
+                df_to_html(df, plt),
                 id="data",
                 style="overflow-x:auto;",
             ),
