@@ -8,7 +8,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True, scope='function')
 def cleanup_files():
     yield
-    Path(UPLOAD_DIR / 'test.csv').unlink(missing_ok=True)
+    Path(UPLOAD_DIR / 'test.parquet').unlink(missing_ok=True)
 
 
 def test_home():
