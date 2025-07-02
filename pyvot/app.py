@@ -147,9 +147,10 @@ def clean(df: pd.DataFrame):
 
 def process_csv(csv: str):
     try:
-        df = pd.read_csv(csv)
-        df = clean(df)
-        return df
+        df = pd.read_csv(csv, skipinitialspace=True, thousands=',')
+        dfc = clean(df)
+        dft = typer(dfc)
+        return dft
     except pd.errors.EmptyDataError:
         raise HTTPException(status_code=400, detail=f"File is empty.")
     except pd.errors.ParserError:
