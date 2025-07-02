@@ -205,15 +205,16 @@ async def home(
 @app.post(f"/{SECRET_URL}")
 async def upload(file: UploadFile):
     filebuffer = await file.read()
+    stem = Path(file.filename).stem
+    filename = f"{stem}.parquet"
     if not file.filename.endswith(".csv"):
         return upload_page(errors=["Only .csv files allowed."])
-    if (UPLOAD_DIR / file.filename).exists():
+    if (UPLOAD_DIR / filename).exists():
         return upload_page(errors=[f"File already exists."])
     try:
         csv_str = StringIO(filebuffer.decode("utf-8", errors='ignore'))
         df = process_csv(csv_str)
     except HTTPException as e:
         return upload_page(errors=[e.detail])
-    stem = Path(file.filename).stem
     df.to_parquet(UPLOAD_DIR / f'{stem}.parquet', index=False)
     return Redirect(f"/{stem}/")
