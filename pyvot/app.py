@@ -1,148 +1,32 @@
-import dateutil
 from io import StringIO
-from fasthtml.common import *
 from pathlib import Path
+
+from fasthtml.common import *
 import pandas as pd
 
+from pyvot.csv import clean, typer
+from pyvot.forms import pivot_form, upload_form
+
+
 SECRET_URL = 'e7kqnVDdGOQNMa6C'
+UPLOAD_DIR = Path("datasets")
+UPLOAD_DIR.mkdir(exist_ok=True)
+ALPINE_CDN = 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'
+ALPINE_SORT_CDN = 'https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js'
+
 
 app, rt = fast_app(
     debug=True,
     title="Pyvot",
     hdrs=[
-        Script(
-            src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js",
-            defer=True,
-        ),
-        Script(
-            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js",
-            defer=True,
-        ),
+        Script(src=ALPINE_SORT_CDN, defer=True),
+        Script(src=ALPINE_CDN, defer=True),
     ],
 )
 
-UPLOAD_DIR = Path("datasets")
-UPLOAD_DIR.mkdir(exist_ok=True)
-
 
 def upload_page(errors: list[str] = []):
-    return Titled(
-        "Pyvot",
-        Article(
-            Form(method="post", action=upload)(
-                Input(type="file", name="file"),
-                Button("Upload", type="submit", cls="secondary"),
-                Div(cls="errors")(*[Div(error, cls="error") for error in errors]),
-            ),
-            Div(cls="info")(
-                "Upload a CSV file to generate a pivot table.",
-                "After uploading, you can select rows, columns, and aggregation functions.",
-            ),
-        ),
-    )
-
-
-def checkbox_select(options: list[str], name: str = ""):
-    return [
-        Label(
-            opt,
-            Input(
-                id=f'{opt.replace(" ", "")}',
-                name=name,
-                value=opt,
-                type="checkbox",
-                checked=True,
-                hidden=True,
-            ),
-            **{"x-sort:item": f'{opt.replace(" ", "")}'},
-            style='''
-                background-color: var(--pico-primary-background);
-                padding: 5px 10px; margin: 5px;
-                border: 1px solid var(--pico-primary-border);
-                border-radius: 4px; display: inline-block;
-            ''',
-        )
-        for opt in options
-    ]
-
-
-def agg_select(agg: str):
-    return Select(
-        "Aggregation",
-        *[
-            Option(f, value=f, selected=(f == agg))
-            for f in ("count", "sum", "mean", "min", "max")
-        ],
-        name="agg",
-        cls="select",
-    )
-
-
-def drop_div(name: str, data=list[str]):
-    return Label(
-        f"{name.title()}s",
-        Div(
-            *checkbox_select(data, name=name),
-            style='''
-                border: 1px solid var(--pico-h1-color); border-radius: 4px;
-                padding: 0.5rem; min-height: 4em;
-            ''',
-            **{"x-sort": f'(item) => sort(item, "{name}")', "x-sort:group": "pivot"},
-        ),
-        style="width: 100%;"
-    )
-
-
-def pivot_form(
-    columns: list[str], row: list[str], col: list[str], val: list[str], agg: str
-):
-    unused_columns = set(columns) - set(row) - set(col) - set(val)
-    return Div(
-        Div(
-            *checkbox_select(unused_columns),
-            ** {"x-sort": f'(item) => sort(item, "")', "x-sort:group": "pivot"},
-        ),
-        Form(
-            drop_div("row", row),
-            drop_div("col", col),
-            drop_div("val", val),
-            Label("Aggregation", agg_select(agg)),
-            Button("Generate Pivot", type="submit", cls="secondary"),
-            method="get",
-            action=".",
-            style="display: flex; flex-direction: column; gap: 1em; margin: 1em 0em;"
-        ),
-        **{"x-data": """{sort(item, select) { item.name = select }}"""},
-    )
-
-
-def typer(df):
-    df2 = df.copy()
-    for col in df2.columns:
-        # Is it a number?
-        try:
-            df2[col] = pd.to_numeric(df[col])
-            continue
-        except Exception:
-            pass
-        # Is it a date?
-        try:
-            df2[col] = df[col].apply(dateutil.parser.parse)
-            df2[col] = pd.to_datetime(df2[col])
-            continue
-        except Exception as e:
-            pass
-    return df2
-
-
-def clean(df: pd.DataFrame):
-    # Strip whitespace from column names
-    df.columns = df.columns.str.strip()
-    # strip whitespaces from all cells
-    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-    # Remove non-space and non-alphanumerics
-    df.columns = df.columns.str.replace(r'[^A-Za-z0-9 ]+', '', regex=True)
-    return df
+    return Titled("Pyvot", Article(upload_form(upload, errors)))
 
 
 def process_csv(csv: str):
