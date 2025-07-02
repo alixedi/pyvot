@@ -147,9 +147,10 @@ def clean(df: pd.DataFrame):
 
 def process_csv(csv: str):
     try:
-        df = pd.read_csv(csv)
-        df = clean(df)
-        return df
+        df = pd.read_csv(csv, skipinitialspace=True, thousands=',')
+        dfc = clean(df)
+        dft = typer(dfc)
+        return dft
     except pd.errors.EmptyDataError:
         raise HTTPException(status_code=400, detail=f"File is empty.")
     except pd.errors.ParserError:
@@ -170,11 +171,10 @@ async def pivot(
 ):
     if not filename:
         return upload_page()
-    file_path = UPLOAD_DIR / f"{filename}.csv"
+    file_path = UPLOAD_DIR / f"{filename}.parquet"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail=f"File {filename} not found.")
-    df = pd.read_csv(file_path, skipinitialspace=True, thousands=',')
-    df = typer(df)
+    df = pd.read_parquet(file_path)
     columns = df.columns.tolist()
     if row or col:
         df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
@@ -205,14 +205,16 @@ async def home(
 @app.post(f"/{SECRET_URL}")
 async def upload(file: UploadFile):
     filebuffer = await file.read()
+    stem = Path(file.filename).stem
+    filename = f"{stem}.parquet"
     if not file.filename.endswith(".csv"):
         return upload_page(errors=["Only .csv files allowed."])
-    if (UPLOAD_DIR / file.filename).exists():
+    if (UPLOAD_DIR / filename).exists():
         return upload_page(errors=[f"File already exists."])
     try:
         csv_str = StringIO(filebuffer.decode("utf-8", errors='ignore'))
         df = process_csv(csv_str)
     except HTTPException as e:
         return upload_page(errors=[e.detail])
-    df.to_csv(UPLOAD_DIR / file.filename, index=False)
-    return Redirect(f"/{file.filename.replace('.csv', '')}/")
+    df.to_parquet(UPLOAD_DIR / f'{stem}.parquet', index=False)
+    return Redirect(f"/{stem}/")

@@ -8,7 +8,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True, scope='function')
 def cleanup_files():
     yield
-    Path(UPLOAD_DIR / 'test.csv').unlink(missing_ok=True)
+    Path(UPLOAD_DIR / 'test.parquet').unlink(missing_ok=True)
 
 
 def test_home():
@@ -41,7 +41,7 @@ def test_get_csv_non_existent():
 def test_upload():
     response = client.post(f"/{SECRET_URL}", files={"file": ("test.csv", "col1,col2\n1,2\n3,4")})
     assert response.status_code == 200
-    file_path = UPLOAD_DIR / 'test.csv'
+    file_path = UPLOAD_DIR / 'test.parquet'
     assert file_path.exists()
 
 def test_upload_nofile():
