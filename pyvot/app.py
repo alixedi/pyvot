@@ -61,13 +61,14 @@ async def pivot(
     df = pd.read_parquet(file_path)
     columns = df.columns.tolist()
     if row or col:
-        df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg)
+        df = pd.pivot_table(df, values=val, index=row, columns=col, aggfunc=agg, fill_value=0)
+    st = df.style.background_gradient(cmap='YlGnBu')
     return Titled(
         f"{filename.title()}",
         Article(
             Div(pivot_form(columns, row=row, col=col, val=val, agg=agg), id="pivot"),
             Div(
-                NotStr(df.to_html()),
+                NotStr(st.to_html(na_rep="")),
                 id="data",
                 style="overflow-x:auto;",
             ),
