@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "jinja2>=3.1.6",
+    "matplotlib>=3.10.3",
     "pandas>=2.3.0",
     "pyarrow>=20.0.0",
     "python-dateutil>=2.9.0.post0",
